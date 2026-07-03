@@ -19,6 +19,16 @@ flowchart LR
 - **Frontend** (`/frontend`): React + Vite, built to static files and served by nginx. nginx also proxies `/api` to the backend. The dashboard polls the API every 10s for near real-time updates.
 - **Database**: PostgreSQL, with a persistent named volume.
 
+## Screenshots
+
+The dashboard, showing an up site, a down site with its failure reason, and live response times:
+
+![Uptime Monitor dashboard](docs/images/dashboard.png)
+
+The full stack running locally under Docker Compose (`db`, `backend`, `frontend`):
+
+![Docker Compose services](docs/images/docker.png)
+
 ## Prerequisites
 
 - [Docker](https://docs.docker.com/get-docker/) and Docker Compose v2 (bundled with Docker Desktop).
