@@ -162,4 +162,4 @@ resource "aws_cloudfront_distribution" "frontend" {
 
 ## AI collaboration
 
-This project was built by leaning heavily on an AI assistant. The tools used, the prompts that generated the core layers, and the course corrections are documented in [AI_LOG.md](AI_LOG.md).
+I built this with an AI assistant (Cursor + Claude), setting the plan, architecture, and workflow while it handled a lot of the implementation under my direction. The tools, the actual prompts, and the course corrections along the way are written up in [AI_LOG.md](AI_LOG.md).
