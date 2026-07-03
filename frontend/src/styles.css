@@ -1,7 +1,134 @@
 :root {
   font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  color: #1f2933;
 }
 
 body {
   margin: 0;
+  background: #f5f7fa;
+}
+
+.container {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.add-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+
+.add-form input {
+  flex: 1;
+  min-width: 180px;
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cbd2d9;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.add-form button {
+  padding: 0.55rem 1.1rem;
+  border: none;
+  border-radius: 6px;
+  background: #2563eb;
+  color: #fff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.add-form button:hover {
+  background: #1d4ed8;
+}
+
+.error {
+  color: #b91c1c;
+  margin: 0.5rem 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+th,
+td {
+  text-align: left;
+  padding: 0.7rem 0.9rem;
+  border-bottom: 1px solid #eef1f4;
+  font-size: 0.92rem;
+}
+
+th {
+  background: #f0f3f7;
+  font-weight: 600;
+}
+
+.empty {
+  text-align: center;
+  color: #7b8794;
+  padding: 1.5rem;
+}
+
+.name {
+  font-weight: 600;
+}
+
+.url,
+.reason {
+  font-size: 0.8rem;
+  color: #7b8794;
+}
+
+.reason {
+  color: #b91c1c;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.2rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.badge.up {
+  background: #def7ec;
+  color: #03543f;
+}
+
+.badge.down {
+  background: #fde2e1;
+  color: #9b1c1c;
+}
+
+.badge.pending {
+  background: #eef1f4;
+  color: #52606d;
+}
+
+.delete {
+  border: 1px solid #cbd2d9;
+  background: #fff;
+  border-radius: 6px;
+  padding: 0.35rem 0.7rem;
+  cursor: pointer;
+  color: #52606d;
+}
+
+.delete:hover {
+  border-color: #b91c1c;
+  color: #b91c1c;
 }
