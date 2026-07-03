@@ -33,6 +33,7 @@ export default function App() {
   async function load() {
     try {
       setMonitors(await listMonitors());
+      setError("");
     } catch (err) {
       setError(err.message);
     }
