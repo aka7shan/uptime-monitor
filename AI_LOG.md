@@ -1,58 +1,36 @@
 # AI Collaboration Log
 
-## My approach
+## Overview
 
-I treated the AI as a fast pair-programmer, not an autopilot. I owned the decisions that matter, the architecture, the tech-stack choices, how the work was broken down, the git workflow, and the final verification, and I used the AI to generate the code quickly, especially the frontend, which is outside my day-to-day. Nothing reached `main` without my review and merge.
+I built this with Cursor (agent mode), using Claude as the underlying model. The AI did a lot of the actual typing, especially on the frontend, while I set the direction: the plan, the stack, how the work was split into commits, and checking the result. It was a back-and-forth: I'd describe what I wanted, review what came back, and correct course when something was off.
 
 ## AI tech stack
 
-- **Cursor** (agent mode) as my coding environment for edits, terminal commands, and git.
-- **Claude** as the underlying LLM I prompted.
+- **Cursor** (agent mode) for editing, running commands, and git.
+- **Claude** as the underlying LLM.
 
-## What I drove vs. what I delegated
+## How it went
 
-| I owned (the decisions) | I delegated to the AI (the execution) |
-| --- | --- |
-| Reading the brief and defining the plan and deliverables | First-pass boilerplate: models, schemas, endpoints, React components |
-| Choosing the stack: FastAPI + PostgreSQL, React + Vite | Wiring the `httpx` checks, the APScheduler job, and the nginx proxy |
-| Branch-per-feature workflow and small, reviewable commits | Producing each file to my spec |
-| Reviewing and merging every PR myself | Drafting the docs (README, this log) |
-| Git hygiene: personal identity, no AI attribution | — |
-| Running the containerized stack and verifying up/down | — |
+I started by having it read the assignment and draft a plan, then went a few rounds on that plan before any code was written, mostly to make sure it covered every requirement and wasn't just generic. Once the approach was settled (FastAPI + PostgreSQL backend, React + Vite dashboard, Docker Compose, and polling instead of WebSockets to keep the MVP simple), I had it build the backend first on its own branch and then the frontend on another, each split into small commits. Nothing went straight to `main`: every branch was pushed for me to review and merge only once it was working, which kept `main` clean and working the whole way through. Even the later docs and a small UI fix each went through their own branch.
 
-## How I directed the build
+At the end I ran the whole stack myself with `docker compose up --build` and tested the up and down cases before calling it done.
 
-- **Plan first.** I had the AI read the assignment PDF, then made it write a full plan and challenged whether it was actually good, not just complete. I explicitly asked it to prove the plan would impress a reviewer before I let it write any code.
-- **I chose the architecture.** FastAPI + PostgreSQL for a clean async backend, React + Vite for the dashboard, and polling instead of WebSockets to keep the MVP simple. I made the trade-off calls and the AI implemented them.
-- **I enforced the workflow.** Separate `backend` and `frontend` branches, work split into several small commits, clean human-sounding commit messages, and each branch pushed for me to review and merge into `main`.
-- **I kept authorship clean.** I required my personal git identity on every commit and no work-account data, and I caught and removed the tool's auto-added co-author attribution.
-- **I verified it myself.** I ran `docker compose up --build` on my own machine and confirmed both the UP (`https://example.com`) and DOWN (invalid domain) states before calling it done.
+## Prompts
 
-## The prompts that shipped it
+A few of the actual prompts that shaped the work:
 
-These are the actual instructions I gave (lightly trimmed).
+- Planning: "Let's first create the plan of action and mention all the deliverables... make sure we cover the entire assignment and no requirement is left."
+- Sanity-checking the plan: "Is this plan good? Would a reviewer read this and think I did well?"
+- Workflow: "Create separate branches for backend and frontend, push them, I'll merge... divide the work into parts so we have multiple commits instead of one giant commit, and keep the messages crisp and human."
+- Before pushing: "Before push, check if everything works, if we're able to compile things."
 
-Planning:
-> "Let's first create the plan of action and mention all the deliverables that we will be working on. Make sure we cover the entire assignment and no requirement is left."
+These produced the FastAPI backend (the models, the register/list/delete/history endpoints, the `httpx` checker, and the APScheduler job that pings every URL every 60s plus an immediate check when a URL is added) and the React dashboard (up/down badges, response times, relative "last checked" times, add/delete, and 10s polling).
 
-Pushing on quality before any code:
-> "First, is this plan good? Like, should an interviewer or reviewer read this and think it's good, and think that as a developer I did good?"
+## Course corrections
 
-Workflow and commit discipline:
-> "Let's create separate branches for backend and then frontend. Push to them, I will merge, then we'll get to main, pull latest, and switch to the frontend branch. Make sure the commit messages are not very long, they're crisp and explain cleanly, such that a person wrote it themselves. Divide the work into parts so we have multiple commits instead of one giant commit."
+A few things the AI got wrong or missed, and how we sorted them out:
 
-Git hygiene:
-> "Make sure you use my personal id for pushing, no [work] data should be pushed." ... "Make sure you don't add co-author Cursor or anything."
-
-Verification gate:
-> "Before push, check if everything works, if we are able to compile things."
-
-These drove the FastAPI backend (SQLAlchemy `Monitor`/`HealthCheck` models, register/list/delete/history endpoints, the `httpx` async checker, and the APScheduler job that pings every URL every 60s plus an immediate check on registration) and the React dashboard (up/down badges, response times, relative "last checked" times, add/delete, 10s polling).
-
-## Course corrections I caught and directed
-
-1. **Wrong shell syntax.** The AI chained commands with `&&`, which my PowerShell rejected (`The token '&&' is not a valid statement separator`). I flagged it and had it switch to `;`-separated commands.
-2. **Unwanted commit attribution.** I noticed the tool was auto-adding a `Co-authored-by: Cursor` trailer to commits. I stopped the work, made it disable attribution, rewrite the un-pushed commits to strip the trailer, and set a repo-local personal git identity so authorship was correctly mine, not my work account.
-3. **Container startup race.** The first `docker-compose.yml` only ordered container *start*, not readiness, which could break nginx's upstream or show a blank dashboard on boot. I had it add a backend `/health` healthcheck and gate the frontend on `depends_on: condition: service_healthy`.
-4. **Raising the quality bar.** When the first plan read as generic, I pushed for senior-level details: classifying *why* a URL is down (timeout vs connection-failed vs HTTP error), showing relative check times so "real-time" is visible, and noting the scheduler must run as a single instance in the cloud to avoid duplicate pings.
-5. **A UI bug from my own run.** During my verification run, a "Failed to fetch" banner stayed on screen even after the data loaded. I traced it to the error state never being cleared on a successful poll and had it fixed.
+- **Shell syntax:** it kept chaining commands with `&&`, which my PowerShell doesn't accept, so we switched to `;`.
+- **Compose startup:** the first `docker-compose.yml` only waited for containers to start, not to be ready, which could leave the dashboard blank or break the nginx proxy on boot. We added a backend healthcheck and made the frontend wait for it.
+- **Plan depth:** the first plan was a bit generic, so I asked for more thought-through details, like showing *why* a URL is down (timeout vs connection failed vs HTTP error) and noting the scheduler should run as a single instance in the cloud to avoid duplicate pings.
+- **A UI bug I hit while testing:** a "Failed to fetch" message stayed on screen even after the data loaded. It turned out the error wasn't being cleared after a successful refresh, so we fixed that.
